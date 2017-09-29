@@ -6,29 +6,42 @@ knapsack_objects <-
     v=runif(n = n, 0, 10000)
   )
 
+intToBits(x$w)
 
 ### PARRALELL OCH VANLIG BLIR INTE SAMMA!!!!!
-knapsack_brute_force <- function(x, W,parallel = FALSE){
+knapsack_brute_force <- function(x, W, parallel = FALSE){
   
   
   ##JAG TROR DET AR DENNA SOM GOR FEL!
   if(parallel == FALSE){
     vect2 <- c()
-    txt <- c()
+    test <- c()
+    n <- 0
     for(i in 1:nrow(x)){
       for(j in 1:nrow(x)){
-        ett <- x$w[i] + x$w[j]
-        if(ett > W | x$w[i] == x$w[j]) {
-          next
-        }
-        
-        #DENNA SKA VARA nrow(x)*nrow(x) lang
-        vect2[i] <- round(x[i,2] + x[j,2],0)
-        txt[i] <- paste(rownames(x[i,]), rownames(x[j,]))
+        n <- n+1
+        test[n] <- x$w[i] + x$w[j]
+        vect2[n] <- round(x[i,2] + x[j,2],0)
       }
     }
+    matrWEI <-  matrix(test,nrow(x))
+    matrVAL <- matrix(vect2,nrow(x))
+    matrWEI2 <- matrWEI[lower.tri(matrWEI,diag = FALSE)]
+    matrVAL2 <- matrVAL[lower.tri(matrVAL, diag = FALSE)]
     
-    list_ret <- list(value = vect2[which.max(vect2)], elements = txt[which.max(vect2)])
+    data <- data.frame(matrWEI2, matrVAL2)
+    
+    #hittar vilket fit som passar W
+    W_fit <- data[which(data$matrWEI2<W),]
+    r_name <- as.numeric(rownames(W_fit[which.max(W_fit$matr2Evolve),]))
+    
+    #hittar maximum
+    maximum <- max(W_fit$matrVAL2)
+    
+    elemenT <- which(matrVAL == maximum, arr.ind = TRUE)[1,]
+    
+    
+    list_ret <- list(value = maximum, elements = as.numeric(elemenT))
     
   } else {
     
@@ -54,6 +67,7 @@ knapsack_brute_force <- function(x, W,parallel = FALSE){
     )
     matr1Evolve <- matr1[lower.tri(matr1,diag = FALSE)]
     
+   
     
     clusterExport(cl, "d_v")
     matr2 <- parSapply(cl, X = c_v,
@@ -70,7 +84,7 @@ knapsack_brute_force <- function(x, W,parallel = FALSE){
     
     #hittar dem som passar W mattet
     W_fit <- data[which(data$matr1Evolve<W),]
-    tail(W_fit)
+    
     r_name <- as.numeric(rownames(W_fit[which.max(W_fit$matr2Evolve),]))
     
     #hittar maximum
@@ -86,8 +100,68 @@ knapsack_brute_force <- function(x, W,parallel = FALSE){
 }
 
 
-knapsack_brute_force(x = knapsack_objects[1:100,], W = 3500, parallel = T)
-knapsack_brute_force(x = knapsack_objects[1:8,], W = 2000)
+knapsack_brute_force(x = knapsack_objects[100:250,], W = 3500, parallel = T)
+knapsack_brute_force(x = knapsack_objects[1:8,], W = 10000)
 knapsack_brute_force(x = knapsack_objects[1:12,], W = 2000)
+
+
+
+
+
+
+
+
+
+################
+
+furp <- as.numeric(intToBits(x$w))
+data.frame(furp, x$w, sort(rep(1:8,8)))
+
+qout <- round(furp*x$v,0)
+
+tapply( qout, (seq_along(qout)-1) %/% 10, sum)
+
+
+(furp*x$v)[ furp> 0]
+
+length((furp*x$w)[ furp> 0])
+
+
+
+
+
+############# dynamic stuff
+W <- 3500
+m <- matrix(0,nrow = nrow(x),ncol = W+1)
+
+for(i in 1:nrow(x)){
+  m[i,] <- 0:W
+}
+
+
+m[2,]
+
+for(i in 2:nrow(x)){
+  for(j in 1:(W+1)){
+    if(x$w[i] > j){
+      m[i,j] <- m[i-1,j]
+      
+    } else {
+      m[i,j] <- max(m[i-1, j], m[i-1, j-x$w[i]] + x$v[i])
+    }
+    
+  }
+}
+m
+which(m == max(m), arr.ind = TRUE)
+
+max(m)
+
+
+    
+
+
+
+
 
 
