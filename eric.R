@@ -113,16 +113,16 @@ y-x
 
 ######### RÄTT
 
-laistan <- list()
-
+comn_row <- list()
 
 for(i in 1:nrow(data)){
-  laistan[[i]] <- combn(colnames(data$w), i)
+  comn_row[[i]] <- combn(1:nrow(data), i)
+  
 }
 
 lapply()
 
-data[laistan[[3]][,1],]
+sum(data[laistan[[3]][,1],]$v)
 
 # KLAR
 # 1
