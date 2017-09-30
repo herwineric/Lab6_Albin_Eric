@@ -41,7 +41,7 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     elemenT <- which(matrVAL == maximum, arr.ind = TRUE)[1,]
     
     
-    list_ret <- list(value = maximum, elements = as.numeric(elemenT))
+    list_ret <- list(value = maximum, elements = sort(as.numeric(elemenT)))
     
   } else {
     
@@ -58,8 +58,7 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     cl <- makeCluster(no_cores)
     
     
-    
-    clusterExport(cl, "b_w")
+    clusterExport(cl, c("b_w", "d_v"))
     matr1 <- parSapply(cl=cl, X = a_w, 
                        FUN = function(x){
                          sapply(X = b_w, FUN = function(y){ x+y })
@@ -69,7 +68,7 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     
    
     
-    clusterExport(cl, "d_v")
+    #clusterExport(cl, "d_v")
     matr2 <- parSapply(cl, X = c_v,
                        FUN = function(x){ 
                          sapply(X = d_v, FUN = function(y){ round(x+y,0)
@@ -92,17 +91,86 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     
     elemenT <- which(matr2 == maximum, arr.ind = TRUE)[1,]
     
-    list_ret <- list(value = maximum, elements = as.numeric(elemenT))
+    list_ret <- list(value = maximum, elements = sort(as.numeric(elemenT)))
     
   }
   
   return(list_ret)
 }
-
-
-knapsack_brute_force(x = knapsack_objects[100:250,], W = 3500, parallel = T)
-knapsack_brute_force(x = knapsack_objects[1:8,], W = 10000)
+knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500)
 knapsack_brute_force(x = knapsack_objects[1:12,], W = 2000)
+
+x <- Sys.time()
+knapsack_brute_force(x = knapsack_objects[1:256,], W = 3500, parallel = F)
+y <- Sys.time()
+y-x
+
+
+
+
+
+
+
+######### RÄTT
+
+laistan <- list()
+
+
+for(i in 1:nrow(data)){
+  laistan[[i]] <- combn(colnames(data$w), i)
+}
+
+lapply()
+
+data[laistan[[3]][,1],]
+
+# KLAR
+# 1
+# 2
+# 3
+# 4
+# 5
+# 
+# 
+# 1 2
+# 1 3
+# 1 4
+# 1 5
+# 
+# 2 3
+# 2 4
+# 2 5
+# 
+# 3 4 
+# 3 5
+# 
+# 4 5
+
+1 2 3
+1 2 4
+1 2 5
+
+1 3 4 
+1 3 5
+
+1 4 5
+
+2 3 4
+2 3 5
+
+2 4 5
+
+3 4 5
+
+1 2 3 4
+1 2 3 5
+
+1 3 4 5
+
+1 2 3 4 5
+
+
+
 
 
 
