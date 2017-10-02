@@ -110,12 +110,12 @@ round(hej2[hej2 > 15000 & hej2 <17000],0)
 W <- 3500
 
 z <- Sys.time()
-knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = F)
+knapsack_brute_force(x = knapsack_objects[1:20,], W = 3500,parallel = F)
 y <- Sys.time()
 y-z
 
 z <- Sys.time()
-knapsack_brute_force(x = knapsack_objects[1:30,], W = 3500,parallel = T)
+knapsack_brute_force(x = knapsack_objects[1:20,], W = 3500,parallel = T)
 y <- Sys.time()
 y-z
 

@@ -36,8 +36,8 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
       apply(temp,2,sum)
     })
     listas_v <- lapply(1:nrow(x), FUN =  function(y) { 
-      temp <-combn(x$v, y)
-      apply(temp,2,sum)
+      colSums(combn(x$v, y))
+      
     })
     
     list_0_txt <- unlist(listas_txt)
@@ -69,27 +69,27 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     clusterExport(cl, c("x"))
     listas_txt <- parLapply(cl, 1:nrow(x), fun =  function(y) {
       temp <- combn(rownames(x), y)
-      apply(temp,2,paste,collapse = " ")
+      apply(temp,2,paste0,collapse = " ")
     })
     listas_w <- parLapply(cl, 1:nrow(x), fun =  function(y) {
-      combn(x$w, y)
+      colSums(combn(x$w, y))
       #apply(temp,2,sum)
     })
     listas_v <- parLapply(cl,1:nrow(x), fun =  function(y) { 
-      combn(x$v, y)
+      colSums(combn(x$v, y))
       #apply(temp, 2, sum)
     })
     
-    fix_list_w <- parLapply(cl,listas_w,fun = colSums )
-    fix_list_v <- parLapply(cl,listas_v,fun = colSums )
+    # fix_list_w <- parLapply(cl,listas_w,fun = colSums )
+    # fix_list_v <- parLapply(cl,listas_v,fun = colSums )
 
     stopCluster(cl)
     
     
     
     list_0_txt <- unlist(listas_txt)
-    list_0_w <- unlist(fix_list_w)
-    list_0_v <- round(unlist(fix_list_v),0)
+    list_0_w <- unlist(listas_w)
+    list_0_v <- round(unlist(listas_v),0)
     
     maximum <- max(list_0_v[which(list_0_w < W)])
     
