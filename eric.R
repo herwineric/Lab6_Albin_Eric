@@ -2,54 +2,47 @@ set.seed(42)
 n <- 2000
 knapsack_objects <-
   data.frame(
-    w=sample(1:4000, size = n, replace = TRUE),
+    w=sample(1:4000, size = 2000, replace = TRUE),
     v=runif(n = n, 0, 10000)
   )
 
-intToBits(x$w)
 
-### PARRALELL OCH VANLIG BLIR INTE SAMMA!!!!!
+
+
 knapsack_brute_force <- function(x, W, parallel = FALSE){
   
   
-  ##JAG TROR DET AR DENNA SOM GOR FEL!
   if(parallel == FALSE){
-    vect2 <- c()
-    test <- c()
-    n <- 0
-    for(i in 1:nrow(x)){
-      for(j in 1:nrow(x)){
-        n <- n+1
-        test[n] <- x$w[i] + x$w[j]
-        vect2[n] <- round(x[i,2] + x[j,2],0)
-      }
-    }
-    matrWEI <-  matrix(test,nrow(x))
-    matrVAL <- matrix(vect2,nrow(x))
-    matrWEI2 <- matrWEI[lower.tri(matrWEI,diag = FALSE)]
-    matrVAL2 <- matrVAL[lower.tri(matrVAL, diag = FALSE)]
+    listas_txt <- lapply(1:nrow(x), FUN =  function(y) {
+      temp <- combn(rownames(x), y)
+      apply(temp,2,paste, collapse = " ")
+      })
+    listas_w <- lapply(1:nrow(x), FUN =  function(y) { 
+      temp <-combn(x$w, y)
+      apply(temp,2,sum)
+      })
+    listas_v <- lapply(1:nrow(x), FUN =  function(y) { 
+      temp <-combn(x$v, y)
+      apply(temp,2,sum)
+      })
     
-    data <- data.frame(matrWEI2, matrVAL2)
+    list_0_txt <- unlist(listas_txt)
+    list_0_w <- unlist(listas_w)
+    list_0_v <- round(unlist(listas_v),0)
     
-    #hittar vilket fit som passar W
-    W_fit <- data[which(data$matrWEI2<W),]
-    r_name <- as.numeric(rownames(W_fit[which.max(W_fit$matr2Evolve),]))
+    #find maximum
+    maximum <- max(list_0_v[which(list_0_w < W)])
     
-    #hittar maximum
-    maximum <- max(W_fit$matrVAL2)
-    
-    elemenT <- which(matrVAL == maximum, arr.ind = TRUE)[1,]
+    #find the maximum combination
+    element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
     
     
-    list_ret <- list(value = maximum, elements = sort(as.numeric(elemenT)))
+    list_ret <- list(value = maximum, elements = element)
     
   } else {
     
-    a_w <- x$w
-    b_w <<- x$w
-    c_v <- x$v
-    d_v <<- x$v
-    
+
+    x <<- x
     #CPU parallel
     library(parallel)
     # Calculate the number of cores
@@ -58,124 +51,116 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     cl <- makeCluster(no_cores)
     
     
-    clusterExport(cl, c("b_w", "d_v"))
-    matr1 <- parSapply(cl=cl, X = a_w, 
-                       FUN = function(x){
-                         sapply(X = b_w, FUN = function(y){ x+y })
-                       }
-    )
-    matr1Evolve <- matr1[lower.tri(matr1,diag = FALSE)]
-    
-   
-    
-    #clusterExport(cl, "d_v")
-    matr2 <- parSapply(cl, X = c_v,
-                       FUN = function(x){ 
-                         sapply(X = d_v, FUN = function(y){ round(x+y,0)
-                         })
-                       }
-    )
-    matr2Evolve <- matr2[lower.tri(matr2,diag = FALSE)]
+    #do the exact as non-parallel, but with parallel
+    clusterExport(cl, c("x"))
+    listas_txt <- parLapply(cl, 1:nrow(x), fun =  function(y) {
+      temp <- combn(rownames(x), y)
+      apply(temp,2,paste,collapse = " ")
+      })
+    listas_w <- parLapply(cl, 1:nrow(x), fun =  function(y) {
+      temp <- combn(x$w, y)
+      apply(temp,2,sum)
+      })
+    listas_v <- parLapply(cl,1:nrow(x), fun =  function(y) { 
+      temp <- combn(x$v, y)
+      apply(temp, 2, sum)
+      })
     stopCluster(cl)
     
-    #data with all possible wights and values
-    data <- data.frame(matr1Evolve, matr2Evolve)
+    list_0_txt <- unlist(listas_txt)
+    list_0_w <- unlist(listas_w)
+    list_0_v <- round(unlist(listas_v),0)
     
-    #hittar dem som passar W mattet
-    W_fit <- data[which(data$matr1Evolve<W),]
     
-    r_name <- as.numeric(rownames(W_fit[which.max(W_fit$matr2Evolve),]))
+    maximum <- max(list_0_v[which(list_0_w < W)])
     
-    #hittar maximum
-    maximum <- max(W_fit$matr2Evolve)
+    #find the maximum combination
+    element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
     
-    elemenT <- which(matr2 == maximum, arr.ind = TRUE)[1,]
     
-    list_ret <- list(value = maximum, elements = sort(as.numeric(elemenT)))
+    list_ret <- list(value = maximum, elements = as.numeric(strsplit(element, " ")[[1]]))
     
+    
+
   }
   
   return(list_ret)
 }
-knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500)
-knapsack_brute_force(x = knapsack_objects[1:12,], W = 2000)
+W <- 3500
 
-x <- Sys.time()
-knapsack_brute_force(x = knapsack_objects[1:256,], W = 3500, parallel = F)
+hej <- as.numeric(intToBits(1:(2^nrow(x)))) * x$v
+hejw <- as.numeric(intToBits(1:(2^nrow(x)))) * x$w
+
+
+#hej <- round(hej,0)
+
+hej2 <- tapply( hej, (seq_along(hej)-1) %/% 10, sum)
+hej2w <- tapply( hejw, (seq_along(hejw)-1) %/% 10, sum)
+
+
+which(hej2w < W & hej2w > 0)
+
+
+round(hej2[hej2 > 15000 & hej2 <17000],0)
+
+
+
+
+z <- Sys.time()
+knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = F)
 y <- Sys.time()
-y-x
+y-z
+
+z <- Sys.time()
+knapsack_brute_force(x = knapsack_objects[1:20,], W = 3500,parallel = T)
+y <- Sys.time()
+y-z
 
 
 
-
-
-
+ts(c(1,5,2,6,3,67,3))
 
 ######### RÄTT
 
-comn_row <- list()
 
-for(i in 1:nrow(data)){
-  comn_row[[i]] <- combn(1:nrow(data), i)
-  
-}
-
-lapply()
+x[as.numeric(rownames(x)),]
 
 sum(data[laistan[[3]][,1],]$v)
 
-# KLAR
-# 1
-# 2
-# 3
-# 4
-# 5
-# 
-# 
-# 1 2
-# 1 3
-# 1 4
-# 1 5
-# 
-# 2 3
-# 2 4
-# 2 5
-# 
-# 3 4 
-# 3 5
-# 
-# 4 5
 
-1 2 3
-1 2 4
-1 2 5
 
-1 3 4 
-1 3 5
+listas_txt <- lapply(1:nrow(x), FUN =  function(y)  combn(rownames(x), y))
+listas_w <- lapply(1:nrow(x), FUN =  function(y)  combn(x$w, y))
+listas_v <- lapply(1:nrow(x), FUN =  function(y)  combn(x$v, y))
 
-1 4 5
+#find combination of elements
+sum_txt <- lapply(listas_txt, function(x){
+  apply(x,2,paste, collapse = " ")
+})
+list_0_txt <- unlist(sum_txt)
 
-2 3 4
-2 3 5
+sum_weights <- lapply(listas_w, function(x){
+  apply(x,2,sum)
+})
+list_0_w <- unlist(sum_weights)
 
-2 4 5
+sum_value <- lapply(listas_v, function(x){
+  apply(x,2,sum)
+})
+list_0_v <- round(unlist(sum_value),0)
 
-3 4 5
+#find maximum
+maximum <- max(list_0_v[which(list_0_w < W)])
 
-1 2 3 4
-1 2 3 5
-
-1 3 4 5
-
-1 2 3 4 5
+#find the maximum combination
+element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
 
 
 
 
 
 
-
-
+lapply
 
 
 
@@ -228,8 +213,9 @@ max(m)
 
     
 
+paste(c("hej", "svej"),collapse = " ")
 
-
+paste0(c("hej", "svej"),collapse = " ")
 
 
 

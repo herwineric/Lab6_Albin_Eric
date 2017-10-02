@@ -13,4 +13,3 @@ LazyData: true
 RoxygenNote: 6.0.1
 Imports: png, httr, jsonlite
 Suggests: testthat, knitr, rmarkdown
-VignetteBuilder: knitr
