@@ -1,6 +1,6 @@
-#'@title Lab5InYourFace: Download data or Plot a address/destination!
+#'@title Lab6VarmKorv: Calculate the knapsack problem with different programing styles!
 #'
-#'@description This package use API from googlemaps to download Longitude and Latitude of a address/destination so you can plot it!
+#'@description This package takes a data frame with different weights and values and locates the maximum. This is done by using a brute force method and an option to parallel process it. A dynamic programming method and a greedy method is implemented. 
 #'
 #' @section The packages functions:
 #' \describe{
