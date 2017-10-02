@@ -72,18 +72,24 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
       apply(temp,2,paste,collapse = " ")
     })
     listas_w <- parLapply(cl, 1:nrow(x), fun =  function(y) {
-      temp <- combn(x$w, y)
-      apply(temp,2,sum)
+      combn(x$w, y)
+      #apply(temp,2,sum)
     })
     listas_v <- parLapply(cl,1:nrow(x), fun =  function(y) { 
-      temp <- combn(x$v, y)
-      apply(temp, 2, sum)
+      combn(x$v, y)
+      #apply(temp, 2, sum)
     })
+    
+    fix_list_w <- parLapply(cl,listas_w,fun = colSums )
+    fix_list_v <- parLapply(cl,listas_v,fun = colSums )
+
     stopCluster(cl)
     
+    
+    
     list_0_txt <- unlist(listas_txt)
-    list_0_w <- unlist(listas_w)
-    list_0_v <- round(unlist(listas_v),0)
+    list_0_w <- unlist(fix_list_w)
+    list_0_v <- round(unlist(fix_list_v),0)
     
     maximum <- max(list_0_v[which(list_0_w < W)])
     

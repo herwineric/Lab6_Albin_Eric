@@ -65,6 +65,9 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
       temp <- combn(x$v, y)
       apply(temp, 2, sum)
       })
+    
+    fix_list_w <- parLapply(cl,listas_w, colSums)
+    
     stopCluster(cl)
     
     list_0_txt <- unlist(listas_txt)
@@ -104,7 +107,7 @@ which(hej2w < W & hej2w > 0)
 round(hej2[hej2 > 15000 & hej2 <17000],0)
 
 
-
+W <- 3500
 
 z <- Sys.time()
 knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = F)
@@ -112,7 +115,7 @@ y <- Sys.time()
 y-z
 
 z <- Sys.time()
-knapsack_brute_force(x = knapsack_objects[1:20,], W = 3500,parallel = T)
+knapsack_brute_force(x = knapsack_objects[1:30,], W = 3500,parallel = T)
 y <- Sys.time()
 y-z
 
