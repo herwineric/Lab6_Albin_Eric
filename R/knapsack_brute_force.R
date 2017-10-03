@@ -28,16 +28,15 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
   
   if(parallel == FALSE){
     listas_txt <- lapply(1:nrow(x), FUN =  function(y) {
-      temp <- combn(rownames(x), y)
-      apply(temp,2,paste, collapse = " ")
+       combn(rownames(x), y, paste, collapse = " ")
+      #apply(temp,2,paste, collapse = " ")
     })
     listas_w <- lapply(1:nrow(x), FUN =  function(y) { 
-      temp <-combn(x$w, y)
-      apply(temp,2,sum)
+      combn(x$w, y, sum)
+      #apply(temp,2,sum)
     })
     listas_v <- lapply(1:nrow(x), FUN =  function(y) { 
-      colSums(combn(x$v, y))
-      
+      combn(x$v, y,sum)
     })
     
     list_0_txt <- unlist(listas_txt)
