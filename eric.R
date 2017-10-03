@@ -115,7 +115,7 @@ y <- Sys.time()
 y-z
 
 z <- Sys.time()
-knapsack_brute_force(x = knapsack_objects[1:20,], W = 3500,parallel = T)
+knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = TRUE)
 y <- Sys.time()
 y-z
 

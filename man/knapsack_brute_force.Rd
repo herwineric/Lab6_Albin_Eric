@@ -2,7 +2,7 @@
 % Please edit documentation in R/knapsack_brute_force.R
 \name{knapsack_brute_force}
 \alias{knapsack_brute_force}
-\title{Longitude and Latitude of a address/destination}
+\title{Brute force method with option}
 \usage{
 knapsack_brute_force(x, W, parallel = FALSE)
 }
@@ -17,13 +17,12 @@ knapsack_brute_force(x, W, parallel = FALSE)
 Returns a list of the maximum value and which elemets used.
 }
 \description{
-Return the longitude and latitude of a address/destination
+Calulate with the brute force method how to get the maximum value out of optimal weight. A choice of a paralell comutation is possible.
 }
 \examples{
 knapsack_objects <-
 data.frame(
  w=sample(1:4000, size = 2000, replace = TRUE),
- v=runif(n = n, 0, 10000))
+ v=runif(n = 2000, 0, 10000))
  knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = FALSE)
- knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = TRUE)
 }
