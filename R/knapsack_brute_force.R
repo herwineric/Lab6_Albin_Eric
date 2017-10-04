@@ -25,90 +25,97 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     stop("Could not find 'w' or 'v'")
   }
   
+  table(x$w > W)
   
-  if(parallel == FALSE){
-    listas_txt <- lapply(1:nrow(x), FUN =  function(y) {
-       combn(rownames(x), y, paste, collapse = " ")
-      #apply(temp,2,paste, collapse = " ")
-    })
-    listas_w <- lapply(1:nrow(x), FUN =  function(y) { 
-      combn(x$w, y, sum)
-      #apply(temp,2,sum)
-    })
-    listas_v <- lapply(1:nrow(x), FUN =  function(y) { 
-      combn(x$v, y,sum)
-    })
-    
-    list_0_txt <- unlist(listas_txt)
-    list_0_w <- unlist(listas_w)
-    list_0_v <- round(unlist(listas_v),0)
-    
-    #find maximum
-    maximum <- max(list_0_v[which(list_0_w < W)])
-    
-    #find the maximum combination
-    element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
-    
-    
-    list_ret <- list(value = maximum, elements = element)
-    
+  if(all(x$w > W)){
+    message("The maximum weight is lower then any withgt in the matrix")
   } else {
     
     
-    x <<- x
-    #CPU parallel
-    require(parallel)
-    requireNamespace("parallel")
-    
-    # Calculate the number of cores
-    no_cores <- detectCores() - 1
-    # Initiate cluster
-    cl <- makeCluster(no_cores)
-    
-    
-    #do the exact as non-parallel, but with parallel
-    clusterExport(cl, c("x"),envir = environment())
-    listas_txt <- parLapply(cl, 1:nrow(x), fun =  function(y) {
-      combn(rownames(x), y, paste0, collapse = " ")
+    if(parallel == FALSE){
+      listas_txt <- lapply(1:nrow(x), FUN =  function(y) {
+        combn(rownames(x), y, paste, collapse = " ")
+        #apply(temp,2,paste, collapse = " ")
+      })
+      listas_w <- lapply(1:nrow(x), FUN =  function(y) { 
+        combn(x$w, y, sum)
+        #apply(temp,2,sum)
+      })
+      listas_v <- lapply(1:nrow(x), FUN =  function(y) { 
+        combn(x$v, y,sum)
+      })
       
-    })
-    listas_w <- parLapply(cl, 1:nrow(x), fun =  function(y) {
-      combn(x$w, y, sum)
+      list_0_txt <- unlist(listas_txt)
+      list_0_w <- unlist(listas_w)
+      list_0_v <- round(unlist(listas_v),0)
       
-    })
-    listas_v <- parLapply(cl,1:nrow(x), fun =  function(y) { 
-      combn(x$v, y , sum)
+      #find maximum
+      maximum <- max(list_0_v[which(list_0_w < W)])
       
-    })
-    
-    
-    # parLapply(cl, 1:nrow(x), function(y,z){
-    #   temp_txt <- combn(rownames(x), y, paste0, collapse = " ")
-    #   temp_w <- combn(x$w, y, sum)
-    #   temp_v <- combn(x$v, y, sum)
-    #   temp_txt
-    #   temp_w
-    #   temp_v
-    # }, z=x)
-    # 
+      #find the maximum combination
+      element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
+      
+      
+      list_ret <- list(value = maximum, elements = element)
+      
+    } else {
+      
+      
+      #x <<- x
+      #CPU parallel
+      require(parallel)
+      requireNamespace("parallel")
+      
+      # Calculate the number of cores
+      no_cores <- detectCores() - 1
+      # Initiate cluster
+      cl <- makeCluster(no_cores)
+      
+      
+      #do the exact as non-parallel, but with parallel
+      clusterExport(cl, c("x"),envir = environment())
+      listas_txt <- parLapply(cl, 1:nrow(x), fun =  function(y) {
+        combn(rownames(x), y, paste0, collapse = " ")
+        
+      })
+      listas_w <- parLapply(cl, 1:nrow(x), fun =  function(y) {
+        combn(x$w, y, sum)
+        
+      })
+      listas_v <- parLapply(cl,1:nrow(x), fun =  function(y) { 
+        combn(x$v, y , sum)
+        
+      })
+      
+      
+      # parLapply(cl, 1:nrow(x), function(y,z){
+      #   temp_txt <- combn(rownames(x), y, paste0, collapse = " ")
+      #   temp_w <- combn(x$w, y, sum)
+      #   temp_v <- combn(x$v, y, sum)
+      #   temp_txt
+      #   temp_w
+      #   temp_v
+      # }, z=x)
+      # 
+      
+      
+      stopCluster(cl)
 
-
-    stopCluster(cl)
-    
-    
-    
-    list_0_txt <- unlist(listas_txt)
-    list_0_w <- unlist(listas_w)
-    list_0_v <- round(unlist(listas_v),0)
-    
-    maximum <- max(list_0_v[which(list_0_w < W)])
-    
-    #find the maximum combination
-    element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
-    
-    list_ret <- list(value = maximum, elements = as.numeric(strsplit(element, " ")[[1]]))
+      list_0_txt <- unlist(listas_txt)
+      list_0_w <- unlist(listas_w)
+      list_0_v <- round(unlist(listas_v),0)
+      
+      maximum <- max(list_0_v[which(list_0_w < W)])
+      
+      #find the maximum combination
+      element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
+      
+      list_ret <- list(value = maximum, elements = as.numeric(strsplit(element, " ")[[1]]))
+      
+    }
     
   }
+
   
   return(list_ret)
 }

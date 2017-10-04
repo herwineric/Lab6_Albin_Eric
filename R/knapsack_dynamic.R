@@ -1,68 +1,131 @@
-knapsack_dynamic(x = knapsack_objects[1:8,], W = 3500)
+
+
+W=3500
+
+
+x <- data.frame(w = c(1,3,4,5), v = c(1,4,5,7))
+
+W <- 7
 
 
 
 
-i=2
-j=1
 
-matr <- matrix(NA, ncol = W, nrow = nrow(x)+1)
-matr[1,] <- 0
-test_v <- c()
-n <- 0
-rownames(matr) <- c(NA, 1:nrow(x))
-for(i in 2:(nrow(x)+1)){
-  for(j in 1:W){
-    
-    if(x$w[i-1] <= j){
-      
-      if(j-x$w[i-1] == 0){
-        plus_vikt <- 0
-      } else {
-        plus_vikt <-  matr[i-1, j-x$w[i-1]]
+
+W=20
+
+knapsack_dynamic <- function(x, W){
+  
+  
+  matr <- matrix(NA, ncol = W + 1, nrow = nrow(x) + 1)
+  matr[1,] <- 0
+  matr[,2] <- 0 
+  
+  el_order <- order(x$w)
+  
+  wt <- x[order(x$w), 1]
+  val <- x[order(x$w), 2]
+  elements <- c()
+  
+  for (i in 1:(nrow(x) + 1)) {
+    for (j in 1:(W + 1)) {
+      if (i == 1 || j == 1) {
+        matr[i, j] <- 0
+      } else if (wt[i - 1] < j - 1 | wt[i - 1] == j - 1) {
+        if(matr[i - 1, j - wt[i - 1]] == 0){
+          tal <- 0
+        } else {
+          tal <- matr[i - 1, j - wt[i - 1]]
+        }
+        matr[i, j] <- max(val[i - 1] + tal,  matr[i - 1, j])
+      } else{
+        matr[i, j] <- matr[i-1, j]
       }
       
-      matr[i,j] <- max(x$v[i-1] + plus_vikt, matr[i-1,j])
-      
-    } else if(x$w[i-1] > j){
-      
-      matr[i,j] <- matr[i-1,j]
+    }
+  }
+  
+  
+  #Colaberated with Milda
+  i <- nrow(x) + 1
+  j <- W + 1
+  n <- 1
+  
+  while (i >= 2 && j >= 1) {
+    if (matr[i, j] > matr[i - 1, j]) {
+      elements[n] <- el_order[i - 1]
+      n <- n + 1
+      j <- j - wt[i - 1]
+    }
+    i <- i - 1
+  }
+  
+  list_ret <- list(value = round(max(matr)), elements = sort(elements))
+  return(list_ret)
+}
 
+
+knapsack_dynamic(x = knapsack_objects[1:8,], W = 2000)
+
+
+
+
+max(matr)
+
+
+
+
+
+
+
+matr <- matrix(NA, ncol = W + 1, nrow = nrow(x) + 1)
+matr[1,] <- 0
+matr[,2] <- 0 
+
+el_order <- order(x$w)
+
+wt <- x[order(x$w), 1]
+val <- x[order(x$w), 2]
+elements <- c()
+
+for (i in 1:(nrow(x) + 1)) {
+  for (j in 1:(W + 1)) {
+    if (i == 1 || j == 1) {
+      matr[i, j] <- 0
+    } else if (wt[i - 1] < j - 1 | wt[i - 1] == j - 1) {
+      
+      if(matr[i - 1, j - wt[i - 1]] == 0){
+        tal <- 0
+      } else {
+        
+        tal <- matr[i - 1, j - wt[i - 1]]
+      }
+      
+      
+      matr[i, j] <- max(val[i - 1] + tal,  matr[i - 1, j])
+      
+    } else{
+      matr[i, j] <- matr[i-1, j]
     }
     
   }
 }
- 
-sort(as.numeric(test_v),TRUE)
 
 
-######### måste bara få ut vilka element som maxxade den!
+#Colaberated with Milda
+i <- nrow(x) + 1
+j <- W + 1
+n <- 1
 
-element_first <- which(max(matr) == matr,arr.ind = TRUE)
-ett <- element_first[nrow(element_first),][1]
-tva <- element_first[nrow(element_first),][2]
-
-matr[ett-1,tva]
-
-nrow(matr)-1
-
-txt <- c()
-
-
-for(i in 1:nrow(x)){
-  if(matr[ett - 1 ,tva] == max(matr)){
-    txt[1] <- rownames(matr)[ett-1]
-  } else {
-    back <- matr[ett,tva] - x$v[ett-1]
-    matr[ett-1, which(matr[ett-1,] == back)]
-    txt[2] <- rownames(matr)[ett-1]
+while (i >= 2 && j >= 1) {
+  if (matr[i, j] > matr[i - 1, j]) {
+    elements[n] <- el_order[i - 1]
+    n <- n + 1
+    j <- j - wt[i - 1]
   }
+  i <- i - 1
 }
-
-
-
-  
-  
+elements
   
   
   

@@ -128,6 +128,20 @@ y <- Sys.time()
 y-z
 
 
+maxTid <- 15
+tid <- c()
+n <- 0
+for(i in 5:maxTid){
+  n <- n+1
+  z <- Sys.time()
+  knapsack_brute_force(x = knapsack_objects[1:i,], W = 3500,parallel = F)
+  y <- Sys.time()
+  tid[n] <- y-z
+}
+
+
+
+
 
 ts(c(1,5,2,6,3,67,3))
 
