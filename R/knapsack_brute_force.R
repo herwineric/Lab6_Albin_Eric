@@ -67,22 +67,31 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     
     
     #do the exact as non-parallel, but with parallel
-    clusterExport(cl, c("x"))
+    clusterExport(cl, c("x"),envir = environment())
     listas_txt <- parLapply(cl, 1:nrow(x), fun =  function(y) {
-      temp <- combn(rownames(x), y)
-      apply(temp,2,paste0,collapse = " ")
+      combn(rownames(x), y, paste0, collapse = " ")
+      
     })
     listas_w <- parLapply(cl, 1:nrow(x), fun =  function(y) {
-      colSums(combn(x$w, y))
-      #apply(temp,2,sum)
+      combn(x$w, y, sum)
+      
     })
     listas_v <- parLapply(cl,1:nrow(x), fun =  function(y) { 
-      colSums(combn(x$v, y))
-      #apply(temp, 2, sum)
+      combn(x$v, y , sum)
+      
     })
     
-    # fix_list_w <- parLapply(cl,listas_w,fun = colSums )
-    # fix_list_v <- parLapply(cl,listas_v,fun = colSums )
+    
+    # parLapply(cl, 1:nrow(x), function(y,z){
+    #   temp_txt <- combn(rownames(x), y, paste0, collapse = " ")
+    #   temp_w <- combn(x$w, y, sum)
+    #   temp_v <- combn(x$v, y, sum)
+    #   temp_txt
+    #   temp_w
+    #   temp_v
+    # }, z=x)
+    # 
+
 
     stopCluster(cl)
     
