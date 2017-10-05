@@ -10,7 +10,7 @@
 #'data.frame(
 #'  w=sample(1:4000, size = 2000, replace = TRUE),
 #'  v=runif(n = 2000, 0, 10000))
-#'  knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = FALSE)
+#'  brute_force_knapsack(x = knapsack_objects[1:8,], W = 3500,parallel = FALSE)
 
 
 

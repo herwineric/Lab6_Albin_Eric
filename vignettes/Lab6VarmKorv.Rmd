@@ -1,6 +1,6 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Lab6VarmKorv"
+author: "Albin Västerlund and Eric Herwin"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -9,50 +9,262 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+This package contains the three different methods for comuting the knapsack problem. The methods with functions are:
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+- `brute_force_knapsack`: Performs a brute force computation and you can have the option of parallel-compute this aswell.
+- `dynamic_knapsack`: Performes a dynamic computation 
 
-## Vignette Info
+All of these methods are producing a output of a list with the `maximum` value of the opimal weight and `elements` that produces the maximum value. 
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+More reading about the knapsack problem can be found [here](https://en.wikipedia.org/wiki/Knapsack_problem)
 
-## Styles
 
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+## Question for 1.1.2
 
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
+How long time does it take to run the brute force search on $n = 16$?
 
-## Figures
+```{r, echo=FALSE, include=FALSE}
 
-The figure sizes have been customised so that you can easily put two images side-by-side. 
+knapsack_objects <-
+data.frame(
+  w=sample(1:4000, size = 2000, replace = TRUE),
+  v=runif(n = 2000, 0, 10000))
+#Brute force
 
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+
+brute_force_knapsack <- function(x, W, parallel = FALSE){
+  
+  stopifnot(is.data.frame(x) | is.integer(W))
+  
+  if((sort(colnames(x))[1] == "v" & sort(colnames(x))[2] == "w" )==FALSE){
+    stop("Could not find 'w' or 'v'")
+  }
+  
+  #table(x$w > W)
+  
+  if(all(x$w > W)){
+    message("The maximum weight is lower then any weight in the data frame")
+  } else {
+    
+    
+    if(parallel == FALSE){
+      listas_txt <- lapply(1:nrow(x), FUN =  function(y) {
+        combn(rownames(x), y, paste, collapse = " ")
+        #apply(temp,2,paste, collapse = " ")
+      })
+      listas_w <- lapply(1:nrow(x), FUN =  function(y) { 
+        combn(x$w, y, sum)
+        #apply(temp,2,sum)
+      })
+      listas_v <- lapply(1:nrow(x), FUN =  function(y) { 
+        combn(x$v, y,sum)
+      })
+      
+      list_0_txt <- unlist(listas_txt)
+      list_0_w <- unlist(listas_w)
+      list_0_v <- round(unlist(listas_v),0)
+      
+      #find maximum
+      maximum <- max(list_0_v[which(list_0_w < W)])
+      
+      #find the maximum combination
+      element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
+      
+      
+      list_ret <- list(value = maximum, elements = as.numeric(strsplit(element, " ")[[1]]))
+      
+      
+    } else {
+      
+      
+      #x <<- x
+      #CPU parallel
+      require(parallel)
+      requireNamespace("parallel")
+      
+      # Calculate the number of cores
+      no_cores <- detectCores() - 1
+      # Initiate cluster
+      cl <- makeCluster(no_cores)
+      
+      
+      #do the exact as non-parallel, but with parallel
+      clusterExport(cl, c("x"),envir = environment())
+      listas_txt <- parLapplyLB(cl, 1:nrow(x), fun =  function(y) {
+        combn(rownames(x), y, paste0, collapse = " ")
+        
+      })
+      listas_w <- parLapplyLB(cl, 1:nrow(x), fun =  function(y) {
+        combn(x$w, y, sum)
+        
+      })
+      listas_v <- parLapplyLB(cl,1:nrow(x), fun =  function(y) { 
+        combn(x$v, y , sum)
+        
+      })
+      
+      
+      stopCluster(cl)
+
+      list_0_txt <- unlist(listas_txt)
+      list_0_w <- unlist(listas_w)
+      list_0_v <- round(unlist(listas_v),0)
+      
+      maximum <- max(list_0_v[which(list_0_w < W)])
+      
+      #find the maximum combination
+      element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
+      
+      list_ret <- list(value = maximum, elements = as.numeric(strsplit(element, " ")[[1]]))
+      
+    }
+    
+  }
+
+  
+  return(list_ret)
+}
+
+
+#greedy knapsack
+
+
+greedy_knapsack <- function(x, W){
+  
+  stopifnot(is.data.frame(x) | is.integer(W))
+  
+  if((sort(colnames(x))[1] == "v" & sort(colnames(x))[2] == "w" )==FALSE){
+    stop("Could not find 'w' or 'v'")
+  }
+  
+  val_per_w <- x$v / x$w
+  x$val_per_w <- val_per_w
+  #order the data
+  data_greed_sort <- x[order(x$val_per_w,decreasing = TRUE),]
+  
+  
+  summie <- data_greed_sort$w[1]
+  n <-0
+  txt <- c()
+  #do the summs
+  while(summie < W){
+    n <- n+1
+    summie <- sum(data_greed_sort$w[1:n]) 
+    val <- sum(data_greed_sort$v[1:n])
+    txt[n] <- rownames(data_greed_sort)[n]
+    
+    
+  }
+  
+  ret_list <- list(value = round(val - data_greed_sort$v[n] ,0),
+                   elements = as.numeric(txt[1:(n-1)]))
+  
+  return(ret_list)
+  
+}
+
+
+
+#dynamic knapsack
+
+
+knapsack_dynamic <- function(x, W){
+  
+  stopifnot(is.data.frame(x) | is.integer(W))
+  
+  if((sort(colnames(x))[1] == "v" & sort(colnames(x))[2] == "w" )==FALSE){
+    stop("Could not find 'w' or 'v'")
+  }
+  
+  
+  
+  matr <- matrix(NA, ncol = W + 1, nrow = nrow(x) + 1)
+  matr[1,] <- 0
+  matr[,2] <- 0 
+  
+  el_order <- order(x$w)
+  
+  wt <- x[order(x$w), 1]
+  val <- x[order(x$w), 2]
+  elements <- c()
+  
+  for (i in 1:(nrow(x) + 1)) {
+    for (j in 1:(W + 1)) {
+      if (i == 1 || j == 1) {
+        matr[i, j] <- 0
+      } else if (wt[i - 1] < j - 1 | wt[i - 1] == j - 1) {
+        if(matr[i - 1, j - wt[i - 1]] == 0){
+          tal <- 0
+        } else {
+          tal <- matr[i - 1, j - wt[i - 1]]
+        }
+        matr[i, j] <- max(val[i - 1] + tal,  matr[i - 1, j])
+      } else{
+        matr[i, j] <- matr[i-1, j]
+      }
+      
+    }
+  }
+  
+  
+  #Colaberated with Milda
+  i <- nrow(x) + 1
+  j <- W + 1
+  n <- 1
+  
+  while (i >= 2 && j >= 1) {
+    if (matr[i, j] > matr[i - 1, j]) {
+      elements[n] <- el_order[i - 1]
+      n <- n + 1
+      j <- j - wt[i - 1]
+    }
+    i <- i - 1
+  }
+  
+  list_ret <- list(value = round(max(matr)), elements = sort(elements))
+  return(list_ret)
+}
+
+
+
+
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+```{r,echo=FALSE,include=FALSE}
+x <- Sys.time()
+brute_force_knapsack(x = knapsack_objects[1:16,], W = 3500,parallel = FALSE)
+y <- Sys.time()
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
 ```
 
-Also a quote using `>`:
+```{r, echo=FALSE}
+y-x
+```
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+
+We can see in the chunk how long time it takes for the brute force function withour parallel.
+
+```{r,echo=FALSE,include=FALSE}
+x <- Sys.time()
+brute_force_knapsack(x = knapsack_objects[1:16,], W = 3500,parallel = TRUE)
+y <- Sys.time()
+
+```
+
+```{r, echo=FALSE}
+y-x
+```
+
+We can see that in this chunk that with parallel comutation we get a longer time.
+
+
+## Question for 1.1.3
+
+
+
+
+
+
+
+
+
