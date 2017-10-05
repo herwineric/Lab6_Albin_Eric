@@ -7,9 +7,9 @@ Author: Albin Vasterlund, Eric Herwin
 Maintainer: Any issues, contact: <erihe068@student.liu.se>
 Description: A package containing 3 functions.
 License: GPL-3
-Depends: R (>= 2.10)
+Depends: R (>= 2.10), parallel, utils
 URL: https://github.com/vasterlund/Lab6_Albin_Eric
 LazyData: true
 RoxygenNote: 6.0.1
-Suggests: testthat, knitr, rmarkdown, parallel
+Suggests: testthat, knitr, rmarkdown
 VignetteBuilder: knitr

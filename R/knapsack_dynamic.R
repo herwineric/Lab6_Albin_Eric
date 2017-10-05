@@ -16,7 +16,7 @@
 
 knapsack_dynamic <- function(x, W){
   
-  stopifnot(is.data.frame(x) | is.integer(W))
+  stopifnot(is.data.frame(x) & is.numeric(W))
   
   if((sort(colnames(x))[1] == "v" & sort(colnames(x))[2] == "w" )==FALSE){
     stop("Could not find 'w' or 'v'")
@@ -26,7 +26,7 @@ knapsack_dynamic <- function(x, W){
   
   matr <- matrix(NA, ncol = W + 1, nrow = nrow(x) + 1)
   matr[1,] <- 0
-  matr[,2] <- 0 
+  matr[,1] <- 0 
   
   el_order <- order(x$w)
   

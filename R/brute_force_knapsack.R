@@ -19,7 +19,7 @@
 
 brute_force_knapsack <- function(x, W, parallel = FALSE){
   
-  stopifnot(is.data.frame(x) | is.integer(W))
+  stopifnot(is.data.frame(x) & is.numeric(W))
   
   if((sort(colnames(x))[1] == "v" & sort(colnames(x))[2] == "w" )==FALSE){
     stop("Could not find 'w' or 'v'")
