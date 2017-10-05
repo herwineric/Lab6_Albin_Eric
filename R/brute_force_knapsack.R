@@ -17,7 +17,7 @@
 
 
 
-knapsack_brute_force <- function(x, W, parallel = FALSE){
+brute_force_knapsack <- function(x, W, parallel = FALSE){
   
   stopifnot(is.data.frame(x) | is.integer(W))
   
@@ -25,10 +25,10 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
     stop("Could not find 'w' or 'v'")
   }
   
-  table(x$w > W)
+  #table(x$w > W)
   
   if(all(x$w > W)){
-    message("The maximum weight is lower then any withgt in the matrix")
+    message("The maximum weight is lower then any weight in the data frame")
   } else {
     
     
@@ -56,7 +56,8 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
       element <- list_0_txt[which(list_0_w < W & list_0_v == maximum)]
       
       
-      list_ret <- list(value = maximum, elements = element)
+      list_ret <- list(value = maximum, elements = as.numeric(strsplit(element, " ")[[1]]))
+      
       
     } else {
       
@@ -74,29 +75,18 @@ knapsack_brute_force <- function(x, W, parallel = FALSE){
       
       #do the exact as non-parallel, but with parallel
       clusterExport(cl, c("x"),envir = environment())
-      listas_txt <- parLapply(cl, 1:nrow(x), fun =  function(y) {
+      listas_txt <- parLapplyLB(cl, 1:nrow(x), fun =  function(y) {
         combn(rownames(x), y, paste0, collapse = " ")
         
       })
-      listas_w <- parLapply(cl, 1:nrow(x), fun =  function(y) {
+      listas_w <- parLapplyLB(cl, 1:nrow(x), fun =  function(y) {
         combn(x$w, y, sum)
         
       })
-      listas_v <- parLapply(cl,1:nrow(x), fun =  function(y) { 
+      listas_v <- parLapplyLB(cl,1:nrow(x), fun =  function(y) { 
         combn(x$v, y , sum)
         
       })
-      
-      
-      # parLapply(cl, 1:nrow(x), function(y,z){
-      #   temp_txt <- combn(rownames(x), y, paste0, collapse = " ")
-      #   temp_w <- combn(x$w, y, sum)
-      #   temp_v <- combn(x$v, y, sum)
-      #   temp_txt
-      #   temp_w
-      #   temp_v
-      # }, z=x)
-      # 
       
       
       stopCluster(cl)

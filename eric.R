@@ -6,7 +6,9 @@ knapsack_objects <-
     v=runif(n = n, 0, 10000)
   )
 
-
+knapsack_brute_force(x = knapsack_objects[1:8,], W = 3500,parallel = F)
+greedy_knapsack(x = knapsack_objects[1:1200,], W = 2000)
+knapsack_dynamic(x = knapsack_objects[1:8,], W = 3500)
 
 
 knapsack_brute_force <- function(x, W, parallel = FALSE){
